@@ -38,7 +38,7 @@ df = df[['anime_id', 'image_url', 'english_name', 'score', 'genres','episodes' ,
 
 # %%
 # ------------------------------------------
-# Step 2: Define the AnimeRecommender class
+# Step 3: Define the AnimeRecommender class
 # ------------------------------------------
 class AnimeRecommender(BaseEstimator, TransformerMixin):
     """Simple content-based anime recommender using TF-IDF and cosine similarity."""
@@ -58,7 +58,20 @@ class AnimeRecommender(BaseEstimator, TransformerMixin):
     
     # Get anime index
     def get_anime_index(self, anime_name):
-        return self.anime_indices.get(anime_name.lower(), -1)
+        # return self.anime_indices.get(anime_name.lower(), -1)
+
+        matches = self.anime_df[self.anime_df['english_name'].str.lower() == anime_name.lower()]
+
+        if not matches.empty:
+            return matches.index[0]
+
+        # Try partial matching if exact match not found
+        matches = self.anime_df[self.anime_df['english_name'].str.lower().str.contains(anime_name.lower())]
+
+        if not matches.empty:
+            return matches.index[0]
+
+        return -1
 
     # Recommend method
     def get_recommendations(self, anime_name, n=10):
@@ -73,7 +86,7 @@ class AnimeRecommender(BaseEstimator, TransformerMixin):
         anime_idx = self.get_anime_index(anime_name)
         if anime_idx == -1:
             print(f"Anime '{anime_name}' not found.")
-            # return pd.DataFrame()
+            print("Try searching for similar Anime :")
 
         similarity_scores = list(enumerate(self.similarity_matrix[anime_idx]))
         similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
@@ -146,7 +159,7 @@ class AnimeRecommender(BaseEstimator, TransformerMixin):
 
 # %%
 # --------------------------------------------------
-# Step 3: Build Pipeline
+# Step 4: Build Pipeline
 # --------------------------------------------------
 anime_pipeline = Pipeline([
     ('AnimeRecommender', AnimeRecommender())
@@ -157,14 +170,14 @@ anime_pipeline.fit(df)
 
 # %%
 # --------------------------------------------------
-# Step 4: Test the model
+# Step 5: Test the model
 # --------------------------------------------------
 # Get the recommender model
 recommender_model = anime_pipeline.named_steps['AnimeRecommender']
 
 #  Get recommendations  By Anime Name
-get_recommendations = recommender_model.get_recommendations("solo leveling")
-get_recommendations.head(2)
+get_recommendations = recommender_model.get_recommendations("fboiefbioearjhoier")
+get_recommendations
 
 # %%
 # Get recommendations  By Genre
@@ -188,6 +201,6 @@ search_anime.head(2)
 
 # %%
 # --------------------------------------------------
-# Step 5: Save the model
+# Step 6: Save the model
 # --------------------------------------------------
 dill.dump(anime_pipeline, open("model/anime_recommender.pkl", "wb"))
