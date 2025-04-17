@@ -1,6 +1,7 @@
 # %%
 import pandas as pd
 import dill
+import gzip
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -203,4 +204,6 @@ search_anime.head(2)
 # --------------------------------------------------
 # Step 6: Save the model
 # --------------------------------------------------
-dill.dump(anime_pipeline, open("model/anime_recommender.pkl", "wb"))
+# dill.dump(anime_pipeline, open("model/anime_recommender.pkl", "wb"))
+with gzip.open('model/anime_recommender.pkl.gz', 'wb') as f:
+    dill.dump(anime_pipeline, f)

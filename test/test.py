@@ -4,11 +4,13 @@ Test script for the Anime Recommendation System.
 
 # Import necessary libraries
 import dill
+import gzip
 
 # Step 1: Load the saved model
 print("Loading the anime recommendation model...")
 try:
-    dilld_model = dill.load(open("model/anime_recommender.pkl", "rb"))
+    with gzip.open('model/anime_recommender.pkl.gz', 'rb') as f:
+        dilld_model = dill.load(f)
     print("Model loaded successfully!")
 except FileNotFoundError:
     print("Error: Model file 'anime_recommender.pkl' not found!")
